@@ -196,9 +196,41 @@ public class Zip extends CordovaPlugin {
     }
 
     private void updateProgress(CallbackContext callbackContext, StringBuilder logBuilder) throws JSONException {
-        PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, logBuilder.toString());
+        PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, new JSONObject("{log: " + logBuilder.toString() + "}");
         pluginResult.setKeepCallback(true);
         callbackContext.sendPluginResult(pluginResult);
     }
 
+    private Uri getUriForArg(String arg) {
+        CordovaResourceApi resourceApi = webView.getResourceApi();
+        Uri tmpTarget = Uri.parse(arg);
+        return resourceApi.remapUri(
+                tmpTarget.getScheme() != null ? tmpTarget : Uri.fromFile(new File(arg)));
+    }
+
+    private static class ProgressEvent {
+        private long loaded;
+        private long total;
+        public long getLoaded() {
+            return loaded;
+        }
+        public void setLoaded(long loaded) {
+            this.loaded = loaded;
+        }
+        public void addLoaded(long add) {
+            this.loaded += add;
+        }
+        public long getTotal() {
+            return total;
+        }
+        public void setTotal(long total) {
+            this.total = total;
+        }
+        public JSONObject toJSONObject() throws JSONException {
+            return new JSONObject(
+                    "{loaded:" + loaded +
+                    ",total:" + total + "}");
+        }
+    }
+	
 }
