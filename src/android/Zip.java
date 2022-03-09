@@ -118,6 +118,7 @@ public class Zip extends CordovaPlugin {
 
             // The inputstream is now pointing at the start of the actual zip file content.
             ZipInputStream zis = new ZipInputStream(inputStream);
+			logBuilder.append("inputstream created"); logBuilder.append(LINE_BREAK);
             inputStream = zis;
 
             ZipEntry ze;
@@ -128,13 +129,19 @@ public class Zip extends CordovaPlugin {
             {
                 anyEntries = true;
                 String compressedName = ze.getName();
+				logBuilder.append("decompress file:"); logBuilder.append(compressedName); logBuilder.append(LINE_BREAK);
 
                 if (ze.isDirectory()) {
-                   File dir = new File(outputDirectory + compressedName);
-                   dir.mkdirs();
+					logBuilder.append("create dir:"); logBuilder.append(outputDirectory + compressedName); logBuilder.append(LINE_BREAK);
+					File dir = new File(outputDirectory + compressedName);
+					dir.mkdirs();
+					logBuilder.append("directory created"); logBuilder.append(LINE_BREAK);
                 } else {
+					logBuilder.append("create file:"); logBuilder.append(outputDirectory + compressedName); logBuilder.append(LINE_BREAK);
                     File file = new File(outputDirectory + compressedName);
+					logBuilder.append("create parent directory"); logBuilder.append(LINE_BREAK);
                     file.getParentFile().mkdirs();
+					logBuilder.append("parent directory done..."); logBuilder.append(LINE_BREAK);
                     if(file.exists() || file.createNewFile()){
                         logBuilder.append("extracting: "); logBuilder.append(file.getPath()); logBuilder.append(LINE_BREAK);
 						Log.w("Zip", "extracting: " + file.getPath());
