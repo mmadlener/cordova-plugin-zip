@@ -52,8 +52,13 @@ public class Zip extends CordovaPlugin {
 
     private void unzipSync(CordovaArgs args, CallbackContext callbackContext) {
         InputStream inputStream = null;
+		StringBuilder logBuilder = new StringBuilder();
+		String LINE_BREAK = System.getProperty("line.separator");
+ 
         try {
+			logBuilder.append("zipFileName: "); logBuilder.append(args.getString(0)); logBuilder.append(LINE_BREAK);
             String zipFileName = args.getString(0);
+			logBuilder.append("outputDirectory: "); logBuilder.append(args.getString(1)); logBuilder.append(LINE_BREAK);
             String outputDirectory = args.getString(1);
 
             // Since Cordova 3.3.0 and release of File plugins, files are accessed via cdvfile://
@@ -66,8 +71,9 @@ public class Zip extends CordovaPlugin {
             File tempFile = resourceApi.mapUriToFile(zipUri);
             if (tempFile == null || !tempFile.exists()) {
                 String errorMessage = "Zip file does not exist";
-                callbackContext.error(errorMessage);
-                Log.e(LOG_TAG, errorMessage);
+				logBuilder.append("Error occured: "); logBuilder.append(errorMessage); 
+                callbackContext.error(logBuilder.toString());
+                Log.e(LOG_TAG, logBuilder.toString());
                 return;
             }
 
@@ -76,8 +82,9 @@ public class Zip extends CordovaPlugin {
             outputDirectory += outputDirectory.endsWith(File.separator) ? "" : File.separator;
             if (outputDir == null || (!outputDir.exists() && !outputDir.mkdirs())){
                 String errorMessage = "Could not create output directory";
-                callbackContext.error(errorMessage);
-                Log.e(LOG_TAG, errorMessage);
+                logBuilder.append("Error occured: "); logBuilder.append(errorMessage); 
+                callbackContext.error(logBuilder.toString());
+                Log.e(LOG_TAG, logBuilder.toString());
                 return;
             }
 
@@ -88,7 +95,8 @@ public class Zip extends CordovaPlugin {
             inputStream = new BufferedInputStream(zipFile.inputStream);
             inputStream.mark(10);
             int magic = readInt(inputStream);
-
+			logBuilder.append("CRX identifier: "); logBuilder.append(String.valueOf(magic)); logBuilder.append(LINE_BREAK);
+			
             if (magic != 875721283) { // CRX identifier
                 inputStream.reset();
             } else {
@@ -128,7 +136,8 @@ public class Zip extends CordovaPlugin {
                     File file = new File(outputDirectory + compressedName);
                     file.getParentFile().mkdirs();
                     if(file.exists() || file.createNewFile()){
-                        Log.w("Zip", "extracting: " + file.getPath());
+                        logBuilder.append("extracting: "); logBuilder.append(file.getPath()); logBuilder.append(LINE_BREAK);
+						Log.w("Zip", "extracting: " + file.getPath());
                         FileOutputStream fout = new FileOutputStream(file);
                         int count;
                         while ((count = zis.read(buffer)) != -1)
@@ -148,14 +157,21 @@ public class Zip extends CordovaPlugin {
             progress.setLoaded(progress.getTotal());
             updateProgress(callbackContext, progress);
 
-            if (anyEntries)
-                callbackContext.success();
-            else
-                callbackContext.error("Bad zip file");
+            if (anyEntries) {
+				String seccessMessage = "Operation successfull";
+				logBuilder.append(seccessMessage); 
+                callbackContext.success(logBuilder.toString());
+            } else {
+                String errorMessage = "Bad zip file";
+				logBuilder.append("Error occured: "); logBuilder.append(errorMessage); 
+                callbackContext.error(logBuilder.toString());
+                Log.e(LOG_TAG, logBuilder.toString());
+			}
         } catch (Exception e) {
             String errorMessage = "An error occurred while unzipping.";
-            callbackContext.error(errorMessage);
-            Log.e(LOG_TAG, errorMessage, e);
+            logBuilder.append("Error occured: "); logBuilder.append(errorMessage); 
+                callbackContext.error(logBuilder.toString());
+            Log.e(LOG_TAG, logBuilder.toString(), e);
         } finally {
             if (inputStream != null) {
                 try {
