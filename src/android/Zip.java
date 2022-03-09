@@ -90,7 +90,6 @@ public class Zip extends CordovaPlugin {
 
             OpenForReadResult zipFile = resourceApi.openForRead(zipUri);
             ProgressEvent progress = new ProgressEvent();
-            progress.setTotal(zipFile.length);
 
             inputStream = new BufferedInputStream(zipFile.inputStream);
             inputStream.mark(10);
@@ -113,7 +112,6 @@ public class Zip extends CordovaPlugin {
                 int signatureLength = readInt(inputStream);
 
                 inputStream.skip(pubkeyLength + signatureLength);
-                progress.setLoaded(16 + pubkeyLength + signatureLength);
             }
 
             // The inputstream is now pointing at the start of the actual zip file content.
@@ -143,7 +141,8 @@ public class Zip extends CordovaPlugin {
 					logBuilder.append("create file:"); logBuilder.append(outputDirectory + compressedName); logBuilder.append(LINE_BREAK);
                     File file = new File(outputDirectory + compressedName);
 					logBuilder.append("create parent directory"); logBuilder.append(LINE_BREAK);
-                    if (file.getParentFile().mkdirs()) {
+                    
+					if (file.getParentFile().mkdirs()) {
 						logBuilder.append("parent directories created"); logBuilder.append(LINE_BREAK);
 					} else {
 						logBuilder.append("parent directories NOT created!!"); logBuilder.append(LINE_BREAK);
@@ -154,22 +153,20 @@ public class Zip extends CordovaPlugin {
 						Log.w("Zip", "extracting: " + file.getPath());
                         FileOutputStream fout = new FileOutputStream(file);
                         int count;
-                        while ((count = zis.read(buffer)) != -1)
-                        {
+                        while ((count = zis.read(buffer)) != -1) {
                             fout.write(buffer, 0, count);
                         }
                         fout.close();
+						logBuilder.append("extracting done... "); logBuilder.append(LINE_BREAK);
                     }
 
                 }
-                progress.addLoaded(ze.getCompressedSize());
-                updateProgress(callbackContext, progress);
+                updateProgress(callbackContext, logBuilder);
                 zis.closeEntry();
             }
 
             // final progress = 100%
-            progress.setLoaded(progress.getTotal());
-            updateProgress(callbackContext, progress);
+            updateProgress(callbackContext, logBuilder);
 
             if (anyEntries) {
 				String seccessMessage = "Operation successfull";
@@ -198,41 +195,10 @@ public class Zip extends CordovaPlugin {
         }
     }
 
-    private void updateProgress(CallbackContext callbackContext, ProgressEvent progress) throws JSONException {
-        PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, progress.toJSONObject());
+    private void updateProgress(CallbackContext callbackContext, StringBuilder logBuilder) throws JSONException {
+        PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, logBuilder.toString());
         pluginResult.setKeepCallback(true);
         callbackContext.sendPluginResult(pluginResult);
     }
 
-    private Uri getUriForArg(String arg) {
-        CordovaResourceApi resourceApi = webView.getResourceApi();
-        Uri tmpTarget = Uri.parse(arg);
-        return resourceApi.remapUri(
-                tmpTarget.getScheme() != null ? tmpTarget : Uri.fromFile(new File(arg)));
-    }
-
-    private static class ProgressEvent {
-        private long loaded;
-        private long total;
-        public long getLoaded() {
-            return loaded;
-        }
-        public void setLoaded(long loaded) {
-            this.loaded = loaded;
-        }
-        public void addLoaded(long add) {
-            this.loaded += add;
-        }
-        public long getTotal() {
-            return total;
-        }
-        public void setTotal(long total) {
-            this.total = total;
-        }
-        public JSONObject toJSONObject() throws JSONException {
-            return new JSONObject(
-                    "{loaded:" + loaded +
-                    ",total:" + total + "}");
-        }
-    }
 }
