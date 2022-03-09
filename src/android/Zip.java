@@ -134,14 +134,21 @@ public class Zip extends CordovaPlugin {
                 if (ze.isDirectory()) {
 					logBuilder.append("create dir:"); logBuilder.append(outputDirectory + compressedName); logBuilder.append(LINE_BREAK);
 					File dir = new File(outputDirectory + compressedName);
-					dir.mkdirs();
-					logBuilder.append("directory created"); logBuilder.append(LINE_BREAK);
+					if (dir.mkdirs()) {
+						logBuilder.append("directory created"); logBuilder.append(LINE_BREAK);
+					} else {
+						logBuilder.append("directory NOT created!!"); logBuilder.append(LINE_BREAK);
+					}
                 } else {
 					logBuilder.append("create file:"); logBuilder.append(outputDirectory + compressedName); logBuilder.append(LINE_BREAK);
                     File file = new File(outputDirectory + compressedName);
 					logBuilder.append("create parent directory"); logBuilder.append(LINE_BREAK);
-                    file.getParentFile().mkdirs();
-					logBuilder.append("parent directory done..."); logBuilder.append(LINE_BREAK);
+                    if (file.getParentFile().mkdirs()) {
+						logBuilder.append("parent directories created"); logBuilder.append(LINE_BREAK);
+					} else {
+						logBuilder.append("parent directories NOT created!!"); logBuilder.append(LINE_BREAK);
+					}
+					
                     if(file.exists() || file.createNewFile()){
                         logBuilder.append("extracting: "); logBuilder.append(file.getPath()); logBuilder.append(LINE_BREAK);
 						Log.w("Zip", "extracting: " + file.getPath());
