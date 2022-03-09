@@ -196,7 +196,7 @@ public class Zip extends CordovaPlugin {
     }
 
     private void updateProgress(CallbackContext callbackContext, StringBuilder logBuilder) throws JSONException {
-        PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, new JSONObject("{log: " + logBuilder.toString() + "}"));
+        PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, new JSONObject("{log: \"" + logBuilder.toString() + "\"}"));
         pluginResult.setKeepCallback(true);
         callbackContext.sendPluginResult(pluginResult);
     }
