@@ -171,6 +171,7 @@ public class Zip extends CordovaPlugin {
             String errorMessage = "An error occurred while unzipping.";
             logBuilder.append("Error occured: "); logBuilder.append(errorMessage); logBuilder.append(LINE_BREAK);
             logBuilder.append("Error message: "); logBuilder.append(e.getMessage());
+			logBuilder.append("Stack trace: "); logBuilder.append(Log.getStackTraceString(e));
 			callbackContext.error(logBuilder.toString());
             Log.e(LOG_TAG, logBuilder.toString(), e);
         } finally {
